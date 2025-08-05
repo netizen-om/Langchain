@@ -1,0 +1,16 @@
+./node_modules/
+.DS_Store
+.env
+dist/
+coverage/
+build/
+.idea/
+.vscode/
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.orig
+node_modules/
+npm-debug.log*
