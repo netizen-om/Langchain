@@ -9,5 +9,10 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@langchain/core": "^0.3.66",
+    "@langchain/langgraph": "^0.4.2",
+    "zod": "^3.25.76"
+  }
 }
