@@ -1,5 +1,6 @@
 import { tool } from "@langchain/core/tools";
 import z from "zod";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const multiply = tool(async(({a, b}) => {
     return a*b;
@@ -39,3 +40,8 @@ const divide = tool(
     }),
   }
 );
+
+// Augment the LLM with tools
+const tools = [add, multiply, divide];
+const toolsByName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
+const llmWithTools = llm.bindTools(tools);
