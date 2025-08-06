@@ -1,5 +1,6 @@
 import { tool } from "@langchain/core/tools";
 import z from "zod";
+import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 
 const llm = new ChatGoogleGenerativeAI({
@@ -50,3 +51,19 @@ const divide = tool(
 const tools = [add, multiply, divide];
 const toolsByName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
 const llmWithTools = llm.bindTools(tools);
+
+// Nodes
+async function llmCall(state) {
+  // LLM decides whether to call a tool or not
+  const result = await llmWithTools.invoke([
+    {
+      role: "system",
+      content: "You are a helpful assistant tasked with performing arithmetic on a set of inputs."
+    },
+    ...state.messages
+  ]);
+
+  return {
+    messages: [result]
+  };
+}
