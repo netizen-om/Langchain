@@ -2,6 +2,7 @@ import { tool } from "@langchain/core/tools";
 import z from "zod";
 import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
+import { ToolMessage } from "@langchain/core/messages";
 
 const llm = new ChatGoogleGenerativeAI({
   apiKey : process.env.GOOGLE_GEMINI_API_KEY,
@@ -66,4 +67,24 @@ async function llmCall(state) {
   return {
     messages: [result]
   };
+}
+
+async function toolNode(state) {
+  const result  = [];
+  const lastMessage = state.messages.at(-1);
+
+  if(lastMessage?.tool_calls?.length) {
+    for(const toolCall of lastMessage.tool_call) {
+      const tool = toolsByName[toolCall.name];
+      const observation = await tool.invoke(toolCall.args);
+      result.push(
+        new ToolMessage({
+          content : observation,
+          tool_call_id : toolCall.id
+        })
+      )
+    }
+  }
+
+  return { messages : result };
 }
