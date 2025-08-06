@@ -4,6 +4,8 @@ import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ToolMessage } from "@langchain/core/messages";
 import { configDotenv } from "dotenv";
+import { ToolNode } from "@langchain/langgraph/prebuilt";
+
 
 configDotenv();
 
@@ -12,9 +14,10 @@ const llm = new ChatGoogleGenerativeAI({
   model : "gemini-2.0-flash"
 })
 
-const multiply = tool(async(({a, b}) => {
-    return a*b;
-}), {
+const multiply = tool(
+  async({a, b}) => {
+      return a*b;
+  }, {
     name : 'multiply',
     description : 'multiply two numbers',
     schema : z.object({
@@ -77,7 +80,7 @@ async function toolNode(state) {
   const lastMessage = state.messages.at(-1);
 
   if(lastMessage?.tool_calls?.length) {
-    for(const toolCall of lastMessage.tool_call) {
+    for(const toolCall of lastMessage.tool_calls) {
       const tool = toolsByName[toolCall.name];
       const observation = await tool.invoke(toolCall.args);
       result.push(
@@ -124,7 +127,7 @@ const agentBuilder = new StateGraph(MessagesAnnotation)
 
 const messages = [{
   role: "user",
-  content: "Add 3 and 4."
+  content: "Add 3 and 4 then multiply the result by 10 and divide it by 2"
 }];
 
 const result = await agentBuilder.invoke({ messages });
