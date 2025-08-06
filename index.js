@@ -88,3 +88,15 @@ async function toolNode(state) {
 
   return { messages : result };
 }
+
+function shouldContinue(state) {
+  const messages = state.messages;
+  const lastMessage = messages.at(-1);
+
+  // If the LLM makes a tool call, then perform an action
+  if (lastMessage?.tool_calls?.length) {
+    return "Action"; 
+  }
+  // Otherwise, we stop (reply to the user)
+  return "__end__";
+}
