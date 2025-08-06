@@ -3,6 +3,9 @@ import z from "zod";
 import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ToolMessage } from "@langchain/core/messages";
+import { configDotenv } from "dotenv";
+
+configDotenv();
 
 const llm = new ChatGoogleGenerativeAI({
   apiKey : process.env.GOOGLE_GEMINI_API_KEY,
@@ -100,3 +103,29 @@ function shouldContinue(state) {
   // Otherwise, we stop (reply to the user)
   return "__end__";
 }
+
+// Build workflow
+const agentBuilder = new StateGraph(MessagesAnnotation)
+  .addNode("llmCall", llmCall)
+  .addNode("tools", toolNode)
+  // Add edges to connect nodes
+  .addEdge("__start__", "llmCall")
+  .addConditionalEdges(
+    "llmCall",
+    shouldContinue,
+    {
+      // Name returned by shouldContinue : Name of next node to visit
+      "Action": "tools",
+      "__end__": "__end__",
+    }
+  )
+  .addEdge("tools", "llmCall")
+  .compile();
+
+const messages = [{
+  role: "user",
+  content: "Add 3 and 4."
+}];
+
+const result = await agentBuilder.invoke({ messages });
+console.log(result.messages);
